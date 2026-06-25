@@ -40,7 +40,7 @@ jobs:
         run: sleep 10s
 
       - name: Run migrations
-        run: make migrateup
+        run: make migrate-up
 
       - name: Unit Test
         run: make test
