@@ -10,7 +10,7 @@ migrate-down:
 migrate-create:
 	@which migrate > /dev/null || (echo "Installing migrate..." && go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest)
 	@if [ -z "$(name)" ]; then echo "Error: name is required. Usage: make migrate-create name=your_migration_name"; exit 1; fi
-	PATH=$$PATH:$$(go env GOPATH)/bin migrate create -ext sql -dir database/migration -seq $(name)
+	PATH=$$PATH:$$(go env GOPATH)/bin migrate create -ext sql -dir db/migration -seq $(name)
 sqlc:
 	sqlc generate
 
