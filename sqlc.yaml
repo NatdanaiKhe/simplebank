@@ -1,0 +1,10 @@
+version: "2"
+sql:
+  - name: "bank"
+    engine: "postgresql"
+    queries: "db/query"
+    schema: "db/schema"
+    gen:
+      go:
+        package: "db"
+        out: "db/sqlc"
