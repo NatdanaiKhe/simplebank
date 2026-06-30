@@ -1,8 +1,13 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"github.com/NatdanaiKhe/simplebank/api"
 	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
@@ -12,7 +17,6 @@ import (
 
 func main() {
 	config, err := util.LoadConfig(".")
-
 	if err != nil {
 		log.Fatal("Cannot load config: ", err)
 	}
@@ -21,12 +25,39 @@ func main() {
 	if err != nil {
 		log.Fatal("Cannot connect to database: ", err)
 	}
+	defer conn.Close()
 
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
-	err = server.Start(config.SERVER_ADDRESS)
 
-	if err != nil {
-		log.Fatal("Cannot start server: ", err)
+	// Start the HTTP server in a background goroutine. If it returns with
+	// an error (and it's not the expected ErrServerClosed from Shutdown),
+	// we send it to errChan so main can fail fast.
+	errChan := make(chan error, 1)
+	go func() {
+		if err := server.Start(config.SERVER_ADDRESS); err != nil {
+			errChan <- err
+		}
+	}()
+
+	// Block until we receive an OS signal or a fatal server error.
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+
+	select {
+	case err := <-errChan:
+		log.Fatalf("Failed to start server: %v", err)
+	case sig := <-quit:
+		log.Printf("Received signal %v — initiating graceful shutdown", sig)
 	}
+
+	// Give outstanding requests up to 10 seconds to finish.
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if err := server.Shutdown(shutdownCtx); err != nil {
+		log.Fatalf("Server forced to shutdown: %v", err)
+	}
+
+	log.Println("Server stopped gracefully")
 }

@@ -5,10 +5,10 @@ info:
 
 http:
   method: GET
-  url: "{{BASE_URL}}/accounts?page_id=1&page_size=10"
+  url: "{{BASE_URL}}/accounts?page_number=0&page_size=10"
   params:
-    - name: page_id
-      value: "1"
+    - name: page_number
+      value: "0"
       type: query
     - name: page_size
       value: "10"
