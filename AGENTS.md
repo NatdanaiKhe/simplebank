@@ -35,3 +35,20 @@ Pull requests should include a concise summary, any database migration impact, c
 ## Security & Configuration Tips
 
 Do not commit real credentials. The local database URL in the `Makefile` is for development only. Keep schema changes reversible by maintaining accurate down migrations.
+
+## Git Commit Messages
+
+Always use Conventional Commits.
+
+Format:
+
+<type>(<scope>): <summary>
+
+Rules:
+
+- Types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert
+- Use imperative mood.
+- Keep the summary under 72 characters.
+- Do not end the summary with a period.
+- Infer the scope from the changed files when possible.
+- Output only the commit message unless the user requests otherwise.

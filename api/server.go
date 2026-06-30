@@ -6,19 +6,19 @@ import (
 	"log"
 	"net/http"
 
-	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
+	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	store  db.Store
-	router *gin.Engine
-	srv    *http.Server
+	service service.AccountService
+	router  *gin.Engine
+	srv     *http.Server
 }
 
-func NewServer(store db.Store) *Server {
+func NewServer(svc service.AccountService) *Server {
 	server := &Server{
-		store: store,
+		service: svc,
 	}
 	router := gin.Default()
 

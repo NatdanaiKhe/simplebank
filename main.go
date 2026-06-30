@@ -11,6 +11,7 @@ import (
 
 	"github.com/NatdanaiKhe/simplebank/api"
 	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
+	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/NatdanaiKhe/simplebank/util"
 	_ "github.com/lib/pq"
 )
@@ -28,11 +29,9 @@ func main() {
 	defer conn.Close()
 
 	store := db.NewStore(conn)
-	server := api.NewServer(store)
+	svc := service.NewAccountService(store)
+	server := api.NewServer(svc)
 
-	// Start the HTTP server in a background goroutine. If it returns with
-	// an error (and it's not the expected ErrServerClosed from Shutdown),
-	// we send it to errChan so main can fail fast.
 	errChan := make(chan error, 1)
 	go func() {
 		if err := server.Start(config.SERVER_ADDRESS); err != nil {
@@ -40,7 +39,6 @@ func main() {
 		}
 	}()
 
-	// Block until we receive an OS signal or a fatal server error.
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 
@@ -51,7 +49,6 @@ func main() {
 		log.Printf("Received signal %v — initiating graceful shutdown", sig)
 	}
 
-	// Give outstanding requests up to 10 seconds to finish.
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
