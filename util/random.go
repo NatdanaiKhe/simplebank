@@ -27,3 +27,8 @@ func RandomFloat(min, max float64) float64 {
 	r := rand.New(rand.NewSource(time.Now().UnixNano()))
 	return r.Float64()*(max-min) + min
 }
+
+func RandomCurrency() string {
+	currencies := []string{"USD", "EUR", "CAD"}
+	return currencies[rand.Intn(len(currencies))]
+}

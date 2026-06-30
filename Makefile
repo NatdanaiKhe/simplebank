@@ -2,6 +2,11 @@
 MIGRATIONS_PATH := $(CURDIR)/db/migration
 DB_URL := postgres://postgres:postgres@localhost:5432/bank?sslmode=disable
 
+dev:
+	air
+build:
+	go build -o simplebank main.go
+
 migrate-up:
 	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" up
 migrate-down:

@@ -91,12 +91,12 @@ func TestListAccounts(t *testing.T) {
 func TestListAccountsWithoutLimit(t *testing.T) {
 	accounts, err := testQueries.ListAccounts(context.Background(), ListAccountsParams{Limit: 0, Offset: 0})
 	require.NoError(t, err)
-	require.Nil(t, accounts)
+	require.Empty(t, accounts)
 }
 
 func TestListAccountsWithNoArg(t *testing.T) {
 	_, err := testQueries.ListAccounts(context.Background(), ListAccountsParams{})
-	require.Nil(t, err)
+	require.NoError(t, err)
 }
 
 func TestDeleteAccount(t *testing.T) {
