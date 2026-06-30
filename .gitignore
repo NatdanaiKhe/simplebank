@@ -1,0 +1,32 @@
+# Binary outputs (compiled executables)
+bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go Test artifacts
+*.test
+*.prof
+_obj/
+_test/
+
+# Dependencies
+# Keep vendor/ ignored if you rely on Go Modules cache (recommended)
+# vendor/
+
+# Environment configurations (Contains sensitive database credentials/API keys)
+.env
+*.env
+.env.local
+app.env
+!example.env
+
+# External / Local development tools
+# Air (Popular live-reload tool for Gin)
+tmp/
+
+# Operating System files
+.DS_Store
+Thumbs.db
