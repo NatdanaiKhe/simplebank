@@ -8,7 +8,7 @@ build:
 	go build -o simplebank main.go
 
 migrate-up:
-	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" up
+	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" -verbose up
 migrate-down:
 	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" down
 
