@@ -27,6 +27,6 @@ func TestMain(m *testing.M) {
 	}
 
 	testQueries = New(testDB)
-	code := m.Run()
-	os.Exit(code)
+	defer testDB.Close()
+	os.Exit(m.Run())
 }

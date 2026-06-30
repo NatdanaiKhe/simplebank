@@ -14,6 +14,7 @@ import (
 	"github.com/NatdanaiKhe/simplebank/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
+	"go.uber.org/zap"
 )
 
 func TestGetAccountAPI(t *testing.T) {
@@ -88,10 +89,10 @@ func TestGetAccountAPI(t *testing.T) {
 			svc := mocksvc.NewMockAccountService(ctrl)
 			tc.buildStubs(svc)
 
-			server := NewServer(svc)
+			server := NewServer(svc, zap.NewNop())
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/accounts/%d", tc.accountID)
+			url := fmt.Sprintf("/api/v1/accounts/%d", tc.accountID)
 			req, err := http.NewRequest("GET", url, nil)
 			require.NoError(t, err)
 
@@ -117,7 +118,7 @@ func requireBodyMatchAccount(t *testing.T, recorder *httptest.ResponseRecorder, 
 
 func randomAccount(t *testing.T) db.Account {
 	return db.Account{
-		ID:       util.RandomInt(0, 1000),
+		ID:       util.RandomInt(0, 100),
 		Owner:    util.RandomString(6),
 		Balance:  util.RandomInt(0, 1000),
 		Currency: util.RandomCurrency(),

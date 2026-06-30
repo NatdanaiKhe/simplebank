@@ -14,10 +14,12 @@ func LoadConfig(path string) (config Config, err error) {
 	viper.SetConfigType("env") // json, xml
 	viper.AutomaticEnv()
 
-	err = viper.ReadInConfig()
-	if err != nil {
-		return Config{}, err
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := err.(viper.ConfigFileNotFoundError); !ok {
+			return Config{}, err
+		}
 	}
+
 	err = viper.Unmarshal(&config)
 	return config, err
 }

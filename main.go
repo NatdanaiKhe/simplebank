@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"database/sql"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -14,23 +13,27 @@ import (
 	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/NatdanaiKhe/simplebank/util"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync()
+
 	config, err := util.LoadConfig(".")
 	if err != nil {
-		log.Fatal("Cannot load config: ", err)
+		logger.Fatal("Cannot load config", zap.Error(err))
 	}
 
 	conn, err := sql.Open(config.DB_Driver, config.DB_URL)
 	if err != nil {
-		log.Fatal("Cannot connect to database: ", err)
+		logger.Fatal("Cannot connect to database", zap.Error(err))
 	}
 	defer conn.Close()
 
 	store := db.NewStore(conn)
 	svc := service.NewAccountService(store)
-	server := api.NewServer(svc)
+	server := api.NewServer(svc, logger)
 
 	errChan := make(chan error, 1)
 	go func() {
@@ -44,17 +47,19 @@ func main() {
 
 	select {
 	case err := <-errChan:
-		log.Fatalf("Failed to start server: %v", err)
+		logger.Fatal("Failed to start server", zap.Error(err))
 	case sig := <-quit:
-		log.Printf("Received signal %v — initiating graceful shutdown", sig)
+		logger.Info("Received signal — initiating graceful shutdown",
+			zap.String("signal", sig.String()),
+		)
 	}
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Fatalf("Server forced to shutdown: %v", err)
+		logger.Fatal("Server forced to shutdown", zap.Error(err))
 	}
 
-	log.Println("Server stopped gracefully")
+	logger.Info("Server stopped gracefully")
 }

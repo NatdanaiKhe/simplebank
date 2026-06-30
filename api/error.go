@@ -4,12 +4,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 // Error codes returned to API clients. Constants prevent typos and
@@ -96,7 +96,7 @@ func mapError(err error) (int, ErrorResponse) {
 
 	// 4. Everything else — log the real error on the server,
 	//    return a generic message to the client.
-	log.Printf("internal error: %v", err)
+	zap.L().Error("internal error", zap.Error(err))
 	return http.StatusInternalServerError, ErrorResponse{
 		Code:    ErrCodeInternal,
 		Message: "An unexpected error occurred",

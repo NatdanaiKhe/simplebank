@@ -3,30 +3,38 @@ package api
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 type Server struct {
 	service service.AccountService
 	router  *gin.Engine
 	srv     *http.Server
+	logger  *zap.Logger
 }
 
-func NewServer(svc service.AccountService) *Server {
+func NewServer(svc service.AccountService, logger *zap.Logger) *Server {
 	server := &Server{
 		service: svc,
+		logger:  logger,
 	}
-	router := gin.Default()
 
-	router.GET("/accounts/:id", server.getAccount)
-	router.GET("/accounts", server.listAccounts)
-	router.POST("/accounts", server.createAccount)
-	router.DELETE("/accounts/:id", server.deleteAccount)
-	router.PUT("/accounts/:id", server.updateAccount)
+	router := gin.Default()
+	router.Use(RequestID())
+	router.Use(LoggerMiddleware(logger))
+
+	apiRouter := router.Group("/api/v1")
+
+	accountRouter := apiRouter.Group("/accounts")
+	accountRouter.GET("/:id", server.getAccount)
+	accountRouter.GET("", server.listAccounts)
+	accountRouter.POST("", server.createAccount)
+	accountRouter.DELETE("/:id", server.deleteAccount)
+	accountRouter.PUT("/:id", server.updateAccount)
 
 	server.router = router
 
@@ -40,7 +48,7 @@ func (server *Server) Start(address string) error {
 		Addr:    address,
 		Handler: server.router,
 	}
-	log.Printf("Server listening on %s", address)
+	server.logger.Info("server starting", zap.String("address", address))
 	if err := server.srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		return fmt.Errorf("server stopped unexpectedly: %w", err)
 	}

@@ -1,34 +1,27 @@
 package util
 
 import (
-	"math/rand"
-	"time"
+	"math/rand/v2"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 func RandomString(n int) string {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+
 	b := make([]byte, n)
 	for i := range b {
-		b[i] = byte(r.Intn(26) + 'a')
+		b[i] = byte(rand.IntN(26) + 'a')
 	}
 	return string(b)
 }
 
 func RandomInt(min, max int) int64 {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return int64(r.Intn(max-min+1) + min)
+	return int64(rand.IntN(max-min+1) + min)
 }
 
 func RandomFloat(min, max float64) float64 {
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	return r.Float64()*(max-min) + min
+	return rand.Float64()*(max-min) + min
 }
 
 func RandomCurrency() string {
 	currencies := []string{"USD", "EUR", "CAD"}
-	return currencies[rand.Intn(len(currencies))]
+	return currencies[rand.IntN(len(currencies))]
 }

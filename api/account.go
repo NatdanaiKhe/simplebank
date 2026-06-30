@@ -1,7 +1,6 @@
 package api
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/NatdanaiKhe/simplebank/service"
@@ -31,12 +30,15 @@ type ListAccountsResponse struct {
 }
 
 type UpdateAccountRequest struct {
-	ID      int64 `json:"id" binding:"required,min=1"`
 	Balance int64 `json:"balance" binding:"required,min=0"`
 }
 
-type DeleteAccountRequest struct {
-	ID int64 `json:"id" binding:"required,min=1"`
+type UpdateAccountUri struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
+}
+
+type DeleteAccountUri struct {
+	ID int64 `uri:"id" binding:"required,min=1"`
 }
 
 func (server *Server) createAccount(c *gin.Context) {
@@ -75,7 +77,6 @@ func (server *Server) getAccount(c *gin.Context) {
 
 func (server *Server) listAccounts(c *gin.Context) {
 	var param ListAccountsRequest
-	log.Println("listAccounts", param)
 	if err := c.ShouldBindQuery(&param); err != nil {
 		errorResponse(c, err)
 		return
@@ -105,6 +106,12 @@ func (server *Server) listAccounts(c *gin.Context) {
 }
 
 func (server *Server) updateAccount(c *gin.Context) {
+	var uri UpdateAccountUri
+	if err := c.ShouldBindUri(&uri); err != nil {
+		errorResponse(c, err)
+		return
+	}
+
 	var req UpdateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		errorResponse(c, err)
@@ -112,7 +119,7 @@ func (server *Server) updateAccount(c *gin.Context) {
 	}
 
 	account, err := server.service.Update(c, service.UpdateAccountParams{
-		ID:      req.ID,
+		ID:      uri.ID,
 		Balance: req.Balance,
 	})
 	if err != nil {
@@ -123,13 +130,13 @@ func (server *Server) updateAccount(c *gin.Context) {
 }
 
 func (server *Server) deleteAccount(c *gin.Context) {
-	var req DeleteAccountRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
+	var uri DeleteAccountUri
+	if err := c.ShouldBindUri(&uri); err != nil {
 		errorResponse(c, err)
 		return
 	}
 
-	err := server.service.Delete(c, req.ID)
+	err := server.service.Delete(c, uri.ID)
 	if err != nil {
 		errorResponse(c, err)
 		return
