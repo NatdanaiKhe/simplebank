@@ -32,8 +32,8 @@ func main() {
 	defer conn.Close()
 
 	store := db.NewStore(conn)
-	svc := service.NewAccountService(store)
-	server := api.NewServer(svc, logger)
+	services := service.NewServiceContainer(store)
+	server := api.NewServer(services, logger)
 
 	errChan := make(chan error, 1)
 	go func() {

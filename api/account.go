@@ -48,7 +48,7 @@ func (server *Server) createAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := server.service.Create(c, service.CreateAccountParams{
+	account, err := server.service.AccountService.Create(c, service.CreateAccountParams{
 		Owner:    req.Owner,
 		Balance:  req.Balance,
 		Currency: req.Currency,
@@ -67,7 +67,7 @@ func (server *Server) getAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := server.service.GetByID(c, req.ID)
+	account, err := server.service.AccountService.GetByID(c, req.ID)
 	if err != nil {
 		errorResponse(c, err)
 		return
@@ -82,7 +82,7 @@ func (server *Server) listAccounts(c *gin.Context) {
 		return
 	}
 
-	accounts, total, err := server.service.List(c, service.ListAccountsParams{
+	accounts, total, err := server.service.AccountService.List(c, service.ListAccountsParams{
 		Limit:  param.PageSize,
 		Offset: param.PageSize * (param.PageNumber - 1),
 	})
@@ -118,7 +118,7 @@ func (server *Server) updateAccount(c *gin.Context) {
 		return
 	}
 
-	account, err := server.service.Update(c, service.UpdateAccountParams{
+	account, err := server.service.AccountService.Update(c, service.UpdateAccountParams{
 		ID:      uri.ID,
 		Balance: req.Balance,
 	})
@@ -136,7 +136,7 @@ func (server *Server) deleteAccount(c *gin.Context) {
 		return
 	}
 
-	err := server.service.Delete(c, uri.ID)
+	err := server.service.AccountService.Delete(c, uri.ID)
 	if err != nil {
 		errorResponse(c, err)
 		return

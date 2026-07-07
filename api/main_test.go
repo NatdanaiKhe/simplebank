@@ -4,9 +4,17 @@ import (
 	"os"
 	"testing"
 
+	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"go.uber.org/zap"
 )
+
+func newTestServer(t *testing.T, service *service.ServiceContainer, logger *zap.Logger) *Server {
+	server := NewServer(service, logger)
+
+	return server
+}
 
 func TestMain(m *testing.M) {
 	gin.SetMode(gin.TestMode)

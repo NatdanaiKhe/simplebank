@@ -1,0 +1,23 @@
+package service
+
+import (
+	"context"
+
+	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
+)
+
+type TransferService interface {
+	CreateTransfer(ctx context.Context, param db.CreateTransferParams) error
+}
+type transferService struct {
+	store db.Store
+}
+
+func NewTransferService(store db.Store) TransferService {
+	return &transferService{store: store}
+}
+
+func (s *transferService) CreateTransfer(ctx context.Context, param db.CreateTransferParams) error {
+	_, err := s.store.CreateTransfer(ctx, param)
+	return err
+}

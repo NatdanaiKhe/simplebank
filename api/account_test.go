@@ -9,8 +9,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	mocksvc "github.com/NatdanaiKhe/simplebank/api/mock"
+	"github.com/NatdanaiKhe/simplebank/api/mock"
 	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
+	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/NatdanaiKhe/simplebank/util"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -23,13 +24,13 @@ func TestGetAccountAPI(t *testing.T) {
 	testCases := []struct {
 		name          string
 		accountID     int64
-		buildStubs    func(svc *mocksvc.MockAccountService)
+		buildStubs    func(svc *mock.MockAccountService)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
 			accountID: account.ID,
-			buildStubs: func(svc *mocksvc.MockAccountService) {
+			buildStubs: func(svc *mock.MockAccountService) {
 				svc.EXPECT().
 					GetByID(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
@@ -43,7 +44,7 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "NotFound",
 			accountID: account.ID,
-			buildStubs: func(svc *mocksvc.MockAccountService) {
+			buildStubs: func(svc *mock.MockAccountService) {
 				svc.EXPECT().
 					GetByID(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
@@ -56,7 +57,7 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "InternalError",
 			accountID: account.ID,
-			buildStubs: func(svc *mocksvc.MockAccountService) {
+			buildStubs: func(svc *mock.MockAccountService) {
 				svc.EXPECT().
 					GetByID(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
@@ -69,7 +70,7 @@ func TestGetAccountAPI(t *testing.T) {
 		{
 			name:      "InvalidID",
 			accountID: 0,
-			buildStubs: func(svc *mocksvc.MockAccountService) {
+			buildStubs: func(svc *mock.MockAccountService) {
 				// Handler should reject before reaching the service.
 				svc.EXPECT().GetByID(gomock.Any(), gomock.Any()).Times(0)
 			},
@@ -86,10 +87,14 @@ func TestGetAccountAPI(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
-			svc := mocksvc.NewMockAccountService(ctrl)
-			tc.buildStubs(svc)
+			accountService := mock.NewMockAccountService(ctrl)
+			tc.buildStubs(accountService)
 
-			server := NewServer(svc, zap.NewNop())
+			services := &service.ServiceContainer{
+				AccountService: accountService,
+			}
+
+			server := newTestServer(t, services, zap.NewNop())
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/accounts/%d", tc.accountID)
@@ -100,6 +105,7 @@ func TestGetAccountAPI(t *testing.T) {
 			tc.checkResponse(t, recorder)
 		})
 	}
+
 }
 
 func requireBodyMatchAccount(t *testing.T, recorder *httptest.ResponseRecorder, expected db.Account) {

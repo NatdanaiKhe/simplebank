@@ -11,13 +11,13 @@ import (
 )
 
 type Server struct {
-	service service.AccountService
+	service *service.ServiceContainer
 	router  *gin.Engine
 	srv     *http.Server
 	logger  *zap.Logger
 }
 
-func NewServer(svc service.AccountService, logger *zap.Logger) *Server {
+func NewServer(svc *service.ServiceContainer, logger *zap.Logger) *Server {
 	server := &Server{
 		service: svc,
 		logger:  logger,
