@@ -48,7 +48,7 @@ func TestGetAccountAPI(t *testing.T) {
 				svc.EXPECT().
 					GetByID(gomock.Any(), gomock.Eq(account.ID)).
 					Times(1).
-					Return(db.Account{}, sql.ErrNoRows)
+					Return(db.Account{}, service.ErrAccountNotFound)
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusNotFound, recorder.Code)

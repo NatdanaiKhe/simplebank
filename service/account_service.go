@@ -2,8 +2,11 @@ package service
 
 import (
 	"context"
+	"database/sql"
+	"errors"
 
 	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
+	"github.com/lib/pq"
 )
 
 // AccountService defines the business operations for accounts.
@@ -48,15 +51,31 @@ func NewAccountService(store db.Store) AccountService {
 }
 
 func (s *accountService) Create(ctx context.Context, params CreateAccountParams) (db.Account, error) {
-	return s.store.CreateAccount(ctx, db.CreateAccountParams{
+	dbParams := db.CreateAccountParams{
 		Owner:    params.Owner,
 		Balance:  params.Balance,
 		Currency: params.Currency,
-	})
+	}
+	account, err := s.store.CreateAccount(ctx, dbParams)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			return db.Account{}, ErrAccountAlreadyExists
+		}
+		return db.Account{}, ErrInternal
+	}
+	return account, nil
 }
 
 func (s *accountService) GetByID(ctx context.Context, id int64) (db.Account, error) {
-	return s.store.GetAccount(ctx, id)
+	account, err := s.store.GetAccount(ctx, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return db.Account{}, ErrAccountNotFound
+		}
+		return db.Account{}, ErrInternal
+	}
+	return account, nil
 }
 
 // List returns the page of accounts plus the total count in the database.

@@ -26,7 +26,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		ToAccountID:   req.ToAccountID,
 		Amount:        req.Amount,
 	}
-	result := server.service.TransferService.CreateTransfer(ctx, arg)
+	result := server.services.TransferService.CreateTransfer(ctx, arg)
 	if result != nil {
 		errorResponse(ctx, result)
 		return
@@ -35,7 +35,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 }
 
 func validateTransferRequest(ctx *gin.Context, server *Server, req *TransferRequest, accountID int) bool {
-	account, err := server.service.AccountService.GetByID(ctx, int64(accountID))
+	account, err := server.services.AccountService.GetByID(ctx, int64(accountID))
 	if err != nil {
 		return false
 	}

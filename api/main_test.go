@@ -10,8 +10,8 @@ import (
 	"go.uber.org/zap"
 )
 
-func newTestServer(t *testing.T, service *service.ServiceContainer, logger *zap.Logger) *Server {
-	server := NewServer(service, logger)
+func newTestServer(t *testing.T, services *service.ServiceContainer, logger *zap.Logger) *Server {
+	server := NewServer(services, logger)
 
 	return server
 }

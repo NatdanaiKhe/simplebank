@@ -11,16 +11,16 @@ import (
 )
 
 type Server struct {
-	service *service.ServiceContainer
-	router  *gin.Engine
-	srv     *http.Server
-	logger  *zap.Logger
+	services *service.ServiceContainer
+	router   *gin.Engine
+	srv      *http.Server
+	logger   *zap.Logger
 }
 
 func NewServer(svc *service.ServiceContainer, logger *zap.Logger) *Server {
 	server := &Server{
-		service: svc,
-		logger:  logger,
+		services: svc,
+		logger:   logger,
 	}
 
 	router := gin.Default()

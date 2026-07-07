@@ -1,14 +1,13 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"net/http"
 
+	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
 
@@ -46,61 +45,46 @@ func errorResponse(c *gin.Context, err error) {
 // and client-safe ErrorResponse. Unknown errors are logged internally but
 // never leaked to the client.
 func mapError(err error) (int, ErrorResponse) {
-	// 1. Validation errors from Gin binding (ShouldBindJSON / ShouldBindUri / ShouldBindQuery)
+	// 1. Keep the Gin validation logic here (it's an API-level concern)
 	var ve validator.ValidationErrors
 	if errors.As(err, &ve) {
-		fields := make([]FieldError, 0, len(ve))
-		for _, fe := range ve {
-			fields = append(fields, FieldError{
-				Field:   fe.Field(),
-				Message: formatValidationError(fe),
-			})
-		}
 		return http.StatusBadRequest, ErrorResponse{
 			Code:    ErrCodeValidation,
 			Message: "Validation failed",
-			Fields:  fields,
+			Fields:  formatValidationErrors(ve),
 		}
 	}
 
-	// 2. Database "not found" — sql.ErrNoRows
-	if errors.Is(err, sql.ErrNoRows) {
-		return http.StatusNotFound, ErrorResponse{
-			Code:    ErrCodeNotFound,
-			Message: "Resource not found",
-		}
+	// 2. Use a map or a simple switch for Domain Errors
+	// This is the ONLY place the API looks at service errors
+	switch {
+	case errors.Is(err, service.ErrAccountNotFound):
+		return http.StatusNotFound, ErrorResponse{Code: ErrCodeNotFound, Message: err.Error()}
+	case errors.Is(err, service.ErrInsufficientFunds):
+		return http.StatusBadRequest, ErrorResponse{Code: ErrCodeBadRequest, Message: err.Error()}
+	case errors.Is(err, service.ErrAccountAlreadyExists):
+		return http.StatusConflict, ErrorResponse{Code: ErrCodeConflict, Message: err.Error()}
+	case errors.Is(err, service.ErrUnsupportedCurrency):
+		return http.StatusUnprocessableEntity, ErrorResponse{Code: ErrCodeBadRequest, Message: err.Error()}
 	}
 
-	// 3. PostgreSQL driver errors — we map pg error codes to
-	//    meaningful HTTP statuses.
-	var pqErr *pq.Error
-	if errors.As(err, &pqErr) {
-		switch pqErr.Code {
-		case "23505": // unique_violation
-			return http.StatusConflict, ErrorResponse{
-				Code:    ErrCodeConflict,
-				Message: "Resource already exists",
-			}
-		case "23503": // foreign_key_violation
-			return http.StatusBadRequest, ErrorResponse{
-				Code:    ErrCodeBadRequest,
-				Message: "Referenced resource does not exist",
-			}
-		case "23502": // not_null_violation
-			return http.StatusBadRequest, ErrorResponse{
-				Code:    ErrCodeBadRequest,
-				Message: "A required field is missing",
-			}
-		}
-	}
-
-	// 4. Everything else — log the real error on the server,
-	//    return a generic message to the client.
+	// 3. Fallback for anything that wasn't translated by the service
 	zap.L().Error("internal error", zap.Error(err))
 	return http.StatusInternalServerError, ErrorResponse{
 		Code:    ErrCodeInternal,
 		Message: "An unexpected error occurred",
 	}
+}
+
+func formatValidationErrors(fe validator.ValidationErrors) []FieldError {
+	fields := make([]FieldError, 0, len(fe))
+	for _, e := range fe {
+		fields = append(fields, FieldError{
+			Field:   e.Field(),
+			Message: formatValidationError(e),
+		})
+	}
+	return fields
 }
 
 // formatValidationError translates a validator tag into a human-readable message.
