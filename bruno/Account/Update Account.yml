@@ -1,20 +1,23 @@
 info:
-  name: Create Account
+  name: Update Account
   type: http
-  seq: 1
+  seq: 5
 
 http:
-  method: POST
-  url: "{{BASE_URL}}/account"
+  method: PUT
+  url: "{{BASE_URL}}/accounts/{{id}}"
   body:
     type: json
     data: |-
       {
-        "owner":"Jack",
-        "balance": 9,
-        "currency": "USD"
+        "balance":100
       }
   auth: inherit
+
+runtime:
+  variables:
+    - name: id
+      value: "3"
 
 settings:
   encodeUrl: true
