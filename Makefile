@@ -4,6 +4,7 @@ MIGRATIONS_PATH := $(CURDIR)/db/migration
 DB_URL := postgres://postgres:postgres@localhost:5432/bank?sslmode=disable
 SERVICE_PKG := github.com/NatdanaiKhe/simplebank/service
 MOCK_DIR := ./api/mock
+DB_MOCK_DIR := ./db/mock
 
 dev:
 	air
@@ -15,7 +16,7 @@ migrate-up:
 	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" -verbose up
 
 migrate-down:
-	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" down
+	migrate -path $(MIGRATIONS_PATH) -database "$(DB_URL)" -verbose down 1
 
 migrate-create: check-name
 	migrate create -ext sql -dir db/migration -seq $(name)
@@ -46,6 +47,13 @@ check-service:
 ifndef service
 	$(error Usage: make mock-service service=TransferService)
 endif
+
+mock-store:
+	mockgen \
+		-package mockdb \
+		-destination $(DB_MOCK_DIR)/store.go \
+		github.com/NatdanaiKhe/simplebank/db/sqlc \
+		Store
 
 install-tools:
 	go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
