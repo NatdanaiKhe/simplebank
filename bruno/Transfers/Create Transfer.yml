@@ -1,16 +1,19 @@
 info:
-  name: Create Account
+  name: Create Transfer
   type: http
   seq: 1
 
 http:
   method: POST
-  url: "{{BASE_URL}}/accounts"
+  url: "{{BASE_URL}}/transfers"
   body:
     type: json
     data: |-
       {
-
+        "from_account_id": 3,
+        "to_account_id": 2,
+        "amount":10,
+        "currency": "USD"
       }
   auth: inherit
 
