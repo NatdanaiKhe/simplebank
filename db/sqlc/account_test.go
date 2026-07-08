@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github.com/NatdanaiKhe/simplebank/util"
 	"github.com/stretchr/testify/require"
 )
 
@@ -15,7 +14,7 @@ func createRandomAccount(t *testing.T) *Account {
 func createRandomAccountWithBalance(t *testing.T, balance int64) *Account {
 	owner := createRandomUser(t)
 	arg := CreateAccountParams{
-		Owner:    owner,
+		Owner:    owner.Username,
 		Balance:  balance,
 		Currency: "THB",
 	}
@@ -32,21 +31,6 @@ func createRandomAccountWithBalance(t *testing.T, balance int64) *Account {
 	require.NotZero(t, account.CreatedAt)
 
 	return &account
-}
-
-func createRandomUser(t *testing.T) string {
-	username := util.RandomString(8)
-	_, err := testDB.ExecContext(
-		context.Background(),
-		`INSERT INTO users (username, hashed_password, full_name, email)
-		VALUES ($1, $2, $3, $4)`,
-		username,
-		util.RandomString(12),
-		util.RandomString(12),
-		username+"@example.com",
-	)
-	require.NoError(t, err)
-	return username
 }
 
 func TestGetAccount(t *testing.T) {

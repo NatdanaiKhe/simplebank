@@ -59,6 +59,14 @@ func (s *accountService) Create(ctx context.Context, params CreateAccountParams)
 	account, err := s.store.CreateAccount(ctx, dbParams)
 	if err != nil {
 		var pqErr *pq.Error
+		if pgErr, ok := err.(*pq.Error); ok {
+			switch pgErr.Code.Name() {
+			case "unique_violation", "foreign_key_violation":
+				return db.Account{}, ErrForeignKeyViolation
+			default:
+				return db.Account{}, ErrInternal
+			}
+		}
 		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
 			return db.Account{}, ErrAccountAlreadyExists
 		}

@@ -9,6 +9,7 @@ var (
 	ErrUnsupportedCurrency  = errors.New("Currency not supported")
 	ErrAccountAlreadyExists = errors.New("Account already exists")
 	ErrInternal             = errors.New("An internal error occurred")
+	ErrForeignKeyViolation  = errors.New("Foreign key violation")
 
 	// Transfer Errors
 	ErrTransferSameAccount       = errors.New("Transfer same account")

@@ -66,6 +66,9 @@ func mapError(c *gin.Context, err error) (int, ErrorResponse) {
 		return http.StatusConflict, ErrorResponse{Code: ErrCodeConflict, Message: err.Error()}
 	case errors.Is(err, service.ErrUnsupportedCurrency):
 		return http.StatusUnprocessableEntity, ErrorResponse{Code: ErrCodeBadRequest, Message: err.Error()}
+	case errors.Is(err, service.ErrForeignKeyViolation):
+		return http.StatusBadRequest, ErrorResponse{Code: ErrCodeBadRequest, Message: err.Error()}
+
 	}
 
 	// Transfer specific errors
@@ -76,7 +79,9 @@ func mapError(c *gin.Context, err error) (int, ErrorResponse) {
 	}
 
 	// 3. Fallback for anything that wasn't translated by the service
-	GetLogger(c).Error("internal error", zap.Error(err))
+	GetLogger(c).Error("internal error",
+		zap.String("error_message", err.Error()),
+	)
 	return http.StatusInternalServerError, ErrorResponse{
 		Code:    ErrCodeInternal,
 		Message: "An unexpected error occurred",

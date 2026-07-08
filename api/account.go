@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/NatdanaiKhe/simplebank/service"
@@ -56,6 +57,11 @@ func (server *Server) createAccount(c *gin.Context) {
 	account, err := server.services.AccountService.Create(c, params)
 
 	if err != nil {
+		if errors.Is(err, service.ErrForeignKeyViolation) {
+			errorResponse(c, service.ErrForeignKeyViolation)
+			return
+		}
+
 		errorResponse(c, err)
 		return
 	}
