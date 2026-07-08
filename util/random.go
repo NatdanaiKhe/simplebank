@@ -2,6 +2,7 @@ package util
 
 import (
 	"math/rand/v2"
+	"strconv"
 )
 
 func RandomString(n int) string {
@@ -24,4 +25,8 @@ func RandomFloat(min, max float64) float64 {
 func RandomCurrency() string {
 	currencies := []string{"USD", "EUR", "CAD"}
 	return currencies[rand.IntN(len(currencies))]
+}
+
+func RandomEmail(name string) string {
+	return name + strconv.FormatInt(RandomInt(4, 4), 10) + "@example.com"
 }

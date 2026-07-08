@@ -5,27 +5,47 @@ import (
 	"fmt"
 	"net/http"
 
+	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
 	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
 )
 
 type Server struct {
 	services *service.ServiceContainer
+	store    db.Store
 	router   *gin.Engine
 	srv      *http.Server
 	logger   *zap.Logger
 }
 
-func NewServer(svc *service.ServiceContainer, logger *zap.Logger) *Server {
+func NewServer(svc *service.ServiceContainer, store db.Store, logger *zap.Logger) (*Server, error) {
 	server := &Server{
 		services: svc,
+		store:    store,
 		logger:   logger,
 	}
 
 	router := gin.Default()
 	router.Use(RequestID())
 	router.Use(LoggerMiddleware(logger))
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
+
+	server.setupRouter()
+	return server, nil
+}
+
+func (server *Server) setupRouter() {
+	router := gin.Default()
+	router.Use(RequestID())
+	router.Use(LoggerMiddleware(server.logger))
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		v.RegisterValidation("currency", validCurrency)
+	}
 
 	apiRouter := router.Group("/api/v1")
 
@@ -36,9 +56,10 @@ func NewServer(svc *service.ServiceContainer, logger *zap.Logger) *Server {
 	accountRouter.DELETE("/:id", server.deleteAccount)
 	accountRouter.PUT("/:id", server.updateAccount)
 
-	server.router = router
+	transferRouter := apiRouter.Group("/transfers")
+	transferRouter.POST("", server.createTransfer)
 
-	return server
+	server.router = router
 }
 
 // Start begins listening on the given address. It blocks until the server

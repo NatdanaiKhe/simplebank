@@ -33,7 +33,10 @@ func main() {
 
 	store := db.NewStore(conn)
 	services := service.NewServiceContainer(store)
-	server := api.NewServer(services, logger)
+	server, err := api.NewServer(services, store, logger)
+	if err != nil {
+		logger.Fatal("Failed to create server", zap.Error(err))
+	}
 
 	errChan := make(chan error, 1)
 	go func() {

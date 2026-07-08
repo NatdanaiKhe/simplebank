@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/NatdanaiKhe/simplebank/api/mock"
+	mockdb "github.com/NatdanaiKhe/simplebank/db/mock"
 	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
 	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/NatdanaiKhe/simplebank/util"
@@ -87,6 +88,8 @@ func TestGetAccountAPI(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 
+			store := mockdb.NewMockStore(ctrl)
+
 			accountService := mock.NewMockAccountService(ctrl)
 			tc.buildStubs(accountService)
 
@@ -94,7 +97,7 @@ func TestGetAccountAPI(t *testing.T) {
 				AccountService: accountService,
 			}
 
-			server := newTestServer(t, services, zap.NewNop())
+			server := newTestServer(t, services, store, zap.NewNop())
 			recorder := httptest.NewRecorder()
 
 			url := fmt.Sprintf("/api/v1/accounts/%d", tc.accountID)

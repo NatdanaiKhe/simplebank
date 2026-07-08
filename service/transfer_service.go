@@ -14,10 +14,15 @@ type transferService struct {
 }
 
 func NewTransferService(store db.Store) TransferService {
-	return &transferService{store: store}
+	return transferService{store: store}
 }
 
-func (s *transferService) CreateTransfer(ctx context.Context, param db.CreateTransferParams) error {
-	_, err := s.store.CreateTransfer(ctx, param)
+func (s transferService) CreateTransfer(ctx context.Context, param db.CreateTransferParams) error {
+	transferTxParams := db.TransferTxParams{
+		FromAccountID: param.FromAccountID,
+		ToAccountID:   param.ToAccountID,
+		Amount:        param.Amount,
+	}
+	_, err := s.store.TransferTx(ctx, transferTxParams)
 	return err
 }
