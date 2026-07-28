@@ -4,46 +4,13 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/NatdanaiKhe/simplebank/api/dto"
 	"github.com/NatdanaiKhe/simplebank/service"
 	"github.com/gin-gonic/gin"
 )
 
-type CreateAccountRequest struct {
-	Owner    string `json:"owner" binding:"required,min=3,max=50"`
-	Balance  int64  `json:"balance" binding:"required,min=0"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR THB"`
-}
-
-type GetAccountRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
-type ListAccountsRequest struct {
-	PageNumber int32 `form:"page_number" binding:"required,min=1"`
-	PageSize   int32 `form:"page_size" binding:"required,min=1,max=10"`
-}
-
-type ListAccountsResponse struct {
-	Accounts   []AccountResponse `json:"accounts"`
-	PageNumber int32             `json:"page_number"`
-	PageSize   int32             `json:"page_size"`
-	Total      int32             `json:"total"`
-}
-
-type UpdateAccountRequest struct {
-	Balance int64 `json:"balance" binding:"required,min=0"`
-}
-
-type UpdateAccountUri struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
-type DeleteAccountUri struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
-}
-
 func (server *Server) createAccount(c *gin.Context) {
-	var req CreateAccountRequest
+	var req dto.CreateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		errorResponse(c, err)
 		return
@@ -65,11 +32,11 @@ func (server *Server) createAccount(c *gin.Context) {
 		errorResponse(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, newAccountResponse(account))
+	c.JSON(http.StatusOK, dto.NewAccountResponse(account))
 }
 
 func (server *Server) getAccount(c *gin.Context) {
-	var req GetAccountRequest
+	var req dto.GetAccountRequest
 	if err := c.ShouldBindUri(&req); err != nil {
 		errorResponse(c, err)
 		return
@@ -80,11 +47,11 @@ func (server *Server) getAccount(c *gin.Context) {
 		errorResponse(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, newAccountResponse(account))
+	c.JSON(http.StatusOK, dto.NewAccountResponse(account))
 }
 
 func (server *Server) listAccounts(c *gin.Context) {
-	var param ListAccountsRequest
+	var param dto.ListAccountsRequest
 	if err := c.ShouldBindQuery(&param); err != nil {
 		errorResponse(c, err)
 		return
@@ -99,12 +66,12 @@ func (server *Server) listAccounts(c *gin.Context) {
 		return
 	}
 
-	accountResponses := make([]AccountResponse, len(accounts))
+	accountResponses := make([]dto.AccountResponse, len(accounts))
 	for i, a := range accounts {
-		accountResponses[i] = newAccountResponse(a)
+		accountResponses[i] = dto.NewAccountResponse(a)
 	}
 
-	res := ListAccountsResponse{
+	res := dto.ListAccountsResponse{
 		Accounts:   accountResponses,
 		PageNumber: param.PageNumber,
 		PageSize:   param.PageSize,
@@ -114,13 +81,13 @@ func (server *Server) listAccounts(c *gin.Context) {
 }
 
 func (server *Server) updateAccount(c *gin.Context) {
-	var uri UpdateAccountUri
+	var uri dto.UpdateAccountUri
 	if err := c.ShouldBindUri(&uri); err != nil {
 		errorResponse(c, err)
 		return
 	}
 
-	var req UpdateAccountRequest
+	var req dto.UpdateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		errorResponse(c, err)
 		return
@@ -134,11 +101,11 @@ func (server *Server) updateAccount(c *gin.Context) {
 		errorResponse(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, newAccountResponse(account))
+	c.JSON(http.StatusOK, dto.NewAccountResponse(account))
 }
 
 func (server *Server) deleteAccount(c *gin.Context) {
-	var uri DeleteAccountUri
+	var uri dto.DeleteAccountUri
 	if err := c.ShouldBindUri(&uri); err != nil {
 		errorResponse(c, err)
 		return
@@ -149,5 +116,5 @@ func (server *Server) deleteAccount(c *gin.Context) {
 		errorResponse(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, SuccessResponse{Message: "account deleted"})
+	c.JSON(http.StatusOK, dto.SuccessResponse{Message: "account deleted"})
 }

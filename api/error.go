@@ -68,7 +68,8 @@ func mapError(c *gin.Context, err error) (int, ErrorResponse) {
 		return http.StatusUnprocessableEntity, ErrorResponse{Code: ErrCodeBadRequest, Message: err.Error()}
 	case errors.Is(err, service.ErrForeignKeyViolation):
 		return http.StatusBadRequest, ErrorResponse{Code: ErrCodeBadRequest, Message: err.Error()}
-
+	case errors.Is(err, service.ErrDuplicateUsername):
+		return http.StatusConflict, ErrorResponse{Code: ErrCodeConflict, Message: err.Error()}
 	}
 
 	// Transfer specific errors

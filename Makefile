@@ -43,9 +43,10 @@ mock-service: check-service
 		$(SERVICE_PKG) \
 		$(service)
 
+
 check-service:
 ifndef service
-	$(error Usage: make mock-service service=TransferService)
+	$(error Usage: make mock-service service=ServiceName)
 endif
 
 mock-store:

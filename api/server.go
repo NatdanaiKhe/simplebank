@@ -56,6 +56,9 @@ func (server *Server) setupRouter() {
 	accountRouter.DELETE("/:id", server.deleteAccount)
 	accountRouter.PUT("/:id", server.updateAccount)
 
+	userRouter := apiRouter.Group("/users")
+	userRouter.POST("", server.createUser)
+
 	transferRouter := apiRouter.Group("/transfers")
 	transferRouter.POST("", server.createTransfer)
 

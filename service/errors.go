@@ -10,6 +10,7 @@ var (
 	ErrAccountAlreadyExists = errors.New("Account already exists")
 	ErrInternal             = errors.New("An internal error occurred")
 	ErrForeignKeyViolation  = errors.New("Foreign key violation")
+	ErrDuplicateUsername    = errors.New("Username already exists")
 
 	// Transfer Errors
 	ErrTransferSameAccount       = errors.New("Transfer same account")

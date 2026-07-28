@@ -8,11 +8,13 @@ import (
 type ServiceContainer struct {
 	AccountService  AccountService
 	TransferService TransferService
+	UserService     UserService
 }
 
 func NewServiceContainer(store db.Store) *ServiceContainer {
 	return &ServiceContainer{
 		AccountService:  NewAccountService(store),
 		TransferService: NewTransferService(store),
+		UserService:     NewUserService(store),
 	}
 }

@@ -9,6 +9,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/NatdanaiKhe/simplebank/api/dto"
 	"github.com/NatdanaiKhe/simplebank/api/mock"
 	mockdb "github.com/NatdanaiKhe/simplebank/db/mock"
 	db "github.com/NatdanaiKhe/simplebank/db/sqlc"
@@ -115,7 +116,7 @@ func requireBodyMatchAccount(t *testing.T, recorder *httptest.ResponseRecorder, 
 	data, err := io.ReadAll(recorder.Body)
 	require.NoError(t, err)
 
-	var got AccountResponse
+	var got dto.AccountResponse
 	err = json.Unmarshal(data, &got)
 	require.NoError(t, err)
 

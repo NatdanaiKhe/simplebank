@@ -47,6 +47,7 @@ type Transfer struct {
 }
 
 type User struct {
+	ID               int64
 	Username          string
 	Role              string
 	HashedPassword    string
